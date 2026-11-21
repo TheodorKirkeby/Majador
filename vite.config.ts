@@ -3,9 +3,9 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // Served from https://theodorkirkeby.github.io/Majador/ (GitHub Pages project
-// site), so every URL lives under /Majador/. Dev stays at /.
-export default defineConfig(({ command }) => ({
-  base: command === 'build' ? '/Majador/' : '/',
+// site), so every URL lives under /Majador/ (also in `vite preview`). Dev stays at /.
+export default defineConfig(({ command, isPreview }) => ({
+  base: command === 'build' || isPreview ? '/Majador/' : '/',
   plugins: [
     react(),
     VitePWA({
@@ -15,7 +15,7 @@ export default defineConfig(({ command }) => ({
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: false, // registered from src/main.tsx
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'badge-96.png'],
       manifest: {
         name: 'MajaDor',
         short_name: 'MajaDor',

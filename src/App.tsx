@@ -1,17 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, useSyncExternalStore, type FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
 import InstallPrompt from './InstallPrompt'
-import {
-  currentSubscription,
-  enablePush,
-  isInstalled,
-  pushSupported,
-  sendTestPush,
-} from './lib/push'
-
-// Shell for the feasibility test: install, log in, receive a push. The
-// shopping list replaces the checklist below once all three work on both phones.
+import Settings from './Settings'
+import ShoppingList from './ShoppingList'
+import { getSnapshot, startStore, stopStore, subscribe } from './lib/store'
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -26,14 +19,73 @@ export default function App() {
     return () => data.subscription.unsubscribe()
   }, [])
 
+  if (loading) return null
+  if (!session) {
+    return (
+      <main className="app">
+        <header className="brand">
+          <h1>
+            Maja<span>Dor</span>
+          </h1>
+        </header>
+        <Login />
+      </main>
+    )
+  }
+  return <Home session={session} />
+}
+
+type View = 'list' | 'bought' | 'settings'
+
+function Home({ session }: { session: Session }) {
+  const [view, setView] = useState<View>('list')
+  const { items, error } = useSyncExternalStore(subscribe, getSnapshot)
+  const userId = session.user.id
+
+  useEffect(() => {
+    startStore(userId)
+  }, [userId])
+
+  const toBuy = items.filter((i) => !i.bought_at).length
+
   return (
     <main className="app">
+      <InstallPrompt />
       <header className="brand">
         <h1>
           Maja<span>Dor</span>
         </h1>
+        <button
+          className="icon-button"
+          aria-label={view === 'settings' ? 'Back to the list' : 'Settings'}
+          onClick={() => setView(view === 'settings' ? 'list' : 'settings')}
+        >
+          {view === 'settings' ? <CloseIcon /> : <GearIcon />}
+        </button>
       </header>
-      {loading ? null : session ? <SetupCheck session={session} /> : <Login />}
+
+      {view === 'settings' ? (
+        <Settings
+          session={session}
+          onLogout={async () => {
+            stopStore()
+            await supabase.auth.signOut()
+          }}
+        />
+      ) : (
+        <>
+          <nav className="tabs" aria-label="Shopping list">
+            <button aria-pressed={view === 'list'} onClick={() => setView('list')}>
+              To buy{toBuy > 0 ? ` (${toBuy})` : ''}
+            </button>
+            <button aria-pressed={view === 'bought'} onClick={() => setView('bought')}>
+              Bought
+            </button>
+          </nav>
+          {error && <p className="banner error-banner">Could not sync: {error}</p>}
+          <ShoppingList view={view} />
+        </>
+      )}
     </main>
   )
 }
@@ -83,111 +135,31 @@ function Login() {
   )
 }
 
-function SetupCheck({ session }: { session: Session }) {
-  const [memberName, setMemberName] = useState<string | null | undefined>(undefined)
-  const [subscribed, setSubscribed] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
+const iconProps = {
+  width: 22,
+  height: 22,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+} as const
 
-  useEffect(() => {
-    supabase
-      .from('members')
-      .select('display_name')
-      .eq('user_id', session.user.id)
-      .maybeSingle()
-      .then(({ data }) => setMemberName(data?.display_name ?? null))
-    currentSubscription().then((sub) => setSubscribed(sub !== null))
-  }, [session.user.id])
-
-  async function run(action: () => Promise<string>) {
-    setBusy(true)
-    setMessage(null)
-    try {
-      setMessage(await action())
-    } catch (e) {
-      setMessage(e instanceof Error ? e.message : String(e))
-    }
-    setBusy(false)
-  }
-
-  const isMember = typeof memberName === 'string'
-
+function GearIcon() {
   return (
-    <>
-      <InstallPrompt />
-      <section className="card">
-        <h2>Setup check</h2>
-        <ul className="checks">
-          <Check ok={isInstalled} label="Opened from the home screen" />
-          <Check ok label={`Logged in as ${session.user.email}`} />
-          <Check
-            ok={isMember}
-            label={
-              memberName === undefined
-                ? 'Checking household…'
-                : isMember
-                  ? `Household member: ${memberName}`
-                  : 'Not in the household yet'
-            }
-          />
-          <Check
-            ok={subscribed}
-            label={
-              !pushSupported
-                ? 'Notifications are not available here'
-                : subscribed
-                  ? 'Notifications are on for this device'
-                  : 'Notifications are off for this device'
-            }
-          />
-        </ul>
-
-        {pushSupported && !subscribed && (
-          <button
-            disabled={busy || !isMember}
-            onClick={() =>
-              run(async () => {
-                await enablePush(session.user.id)
-                setSubscribed(true)
-                return 'Notifications are on.'
-              })
-            }
-          >
-            Turn on notifications
-          </button>
-        )}
-
-        {subscribed && (
-          <button
-            disabled={busy}
-            onClick={() =>
-              run(async () => {
-                const r = await sendTestPush()
-                return `Sent to ${r.sent} device${r.sent === 1 ? '' : 's'}${
-                  r.failed ? `, ${r.failed} failed` : ''
-                }.`
-              })
-            }
-          >
-            Send test notification to everyone
-          </button>
-        )}
-
-        {message && <p className="hint">{message}</p>}
-      </section>
-
-      <button className="link" onClick={() => supabase.auth.signOut()}>
-        Log out
-      </button>
-    </>
+    <svg {...iconProps}>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.8 1.2V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0-1.2-2.8H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.2-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 2.8-1.2V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0 1.2 2.8H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1.1z" />
+    </svg>
   )
 }
 
-function Check({ ok, label }: { ok: boolean; label: string }) {
+function CloseIcon() {
   return (
-    <li className={ok ? 'ok' : 'todo'}>
-      <span aria-hidden="true">{ok ? '✓' : '○'}</span>
-      {label}
-    </li>
+    <svg {...iconProps}>
+      <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
   )
 }

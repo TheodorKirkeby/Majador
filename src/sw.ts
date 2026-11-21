@@ -25,7 +25,8 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title ?? 'MajaDor', {
       body: data.body ?? '',
       icon: new URL('icon-192.png', self.registration.scope).href,
-      badge: new URL('icon-192.png', self.registration.scope).href,
+      // Android's small status-bar icon: must be a white shape on transparent.
+      badge: new URL('badge-96.png', self.registration.scope).href,
       tag: data.tag,
       data: { url: data.url ?? self.registration.scope },
     }),
