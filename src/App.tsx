@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { supabase } from './lib/supabase'
+import InstallPrompt from './InstallPrompt'
 import {
   currentSubscription,
   enablePush,
@@ -113,6 +114,7 @@ function SetupCheck({ session }: { session: Session }) {
 
   return (
     <>
+      <InstallPrompt />
       <section className="card">
         <h2>Setup check</h2>
         <ul className="checks">
@@ -139,13 +141,6 @@ function SetupCheck({ session }: { session: Session }) {
             }
           />
         </ul>
-
-        {!isInstalled && (
-          <p className="hint">
-            Add MajaDor to the home screen first (iPhone: Share → Add to Home Screen; Android:
-            menu → Install app), then open it from the icon.
-          </p>
-        )}
 
         {pushSupported && !subscribed && (
           <button

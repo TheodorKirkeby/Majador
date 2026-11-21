@@ -147,3 +147,60 @@ button.link {
   font-size: 0.9rem;
   color: var(--accent);
 }
+
+/* Install popup */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.45);
+  padding: 16px 16px calc(env(safe-area-inset-bottom) + 16px);
+}
+
+.sheet {
+  width: 100%;
+  max-width: 428px;
+  background: var(--card);
+  border-radius: 20px;
+  padding: 24px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: center;
+}
+
+.sheet h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.sheet p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.sheet-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  align-self: center;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+}
+
+.inline-icon {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: -0.2em;
+  color: var(--accent);
+}
