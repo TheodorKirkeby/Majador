@@ -24,15 +24,24 @@ export default function App() {
     return (
       <main className="app">
         <header className="brand">
-          <h1>
-            Maja<span>Dor</span>
-          </h1>
+          <Brand />
         </header>
         <Login />
       </main>
     )
   }
   return <Home session={session} />
+}
+
+function Brand() {
+  return (
+    <div className="brand-name">
+      <img src={`${import.meta.env.BASE_URL}icon-192.png`} alt="" />
+      <h1>
+        Maja<span>Dor</span>
+      </h1>
+    </div>
+  )
 }
 
 type View = 'list' | 'bought' | 'settings'
@@ -52,9 +61,7 @@ function Home({ session }: { session: Session }) {
     <main className="app">
       <InstallPrompt />
       <header className="brand">
-        <h1>
-          Maja<span>Dor</span>
-        </h1>
+        <Brand />
         <button
           className="icon-button"
           aria-label={view === 'settings' ? 'Back to the list' : 'Settings'}

@@ -15,7 +15,7 @@ export default defineConfig(({ command, isPreview }) => ({
       filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: false, // registered from src/main.tsx
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'badge-96.png'],
+      includeAssets: ['favicon.png', 'apple-touch-icon.png', 'badge-96.png'],
       manifest: {
         name: 'MajaDor',
         short_name: 'MajaDor',
@@ -23,12 +23,17 @@ export default defineConfig(({ command, isPreview }) => ({
         lang: 'da',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#fbf7f1',
-        theme_color: '#fbf7f1',
+        background_color: '#f4faf5',
+        theme_color: '#f4faf5',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          {
+            src: 'icon-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
     }),

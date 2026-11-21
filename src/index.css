@@ -1,12 +1,19 @@
+/* Palette: everything is derived from the primary colour #00cc32 (also the
+   logo's background). The primary is too light for white text, so text on it
+   is a very dark green (--on-accent) and green text on the page uses the
+   darker --accent-text. Neutrals are tinted slightly towards the same green. */
 :root {
-  --bg: #fbf7f1;
+  --accent: #00cc32;
+  --on-accent: #03260d;
+  --accent-text: #008420;
+  --bg: #f4faf5;
   --card: #ffffff;
-  --ink: #2b2622;
-  --muted: #7a716a;
-  --line: #eadfd2;
-  --accent: #c8553d;
-  --ok: #3f7d58;
+  --ink: #102117;
+  --muted: #5a6b60;
+  --line: #dcebe0;
+  --ok: #008a22;
   --danger: #b3261e;
+  --danger-text: #b3261e;
 
   font-family: 'Work Sans Variable', system-ui, sans-serif;
   color: var(--ink);
@@ -16,14 +23,15 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1c1917;
-    --card: #282421;
-    --ink: #f3ece4;
-    --muted: #a69b91;
-    --line: #3a342f;
-    --accent: #e8795f;
-    --ok: #4f9a6c;
+    --accent-text: #2fe05a;
+    --bg: #0d1410;
+    --card: #17211a;
+    --ink: #e8f3ea;
+    --muted: #93a699;
+    --line: #27352b;
+    --ok: #0c8a2e;
     --danger: #c9433a;
+    --danger-text: #f0766d;
   }
 }
 
@@ -62,7 +70,18 @@ body {
 }
 
 .brand h1 span {
-  color: var(--accent);
+  color: var(--accent-text);
+}
+
+.brand-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-name img {
+  width: 40px;
+  height: 40px;
 }
 
 .card {
@@ -102,7 +121,7 @@ input {
 button {
   font: inherit;
   font-weight: 600;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   border: 0;
   border-radius: 10px;
@@ -153,7 +172,7 @@ button.link {
 .error {
   margin: 0;
   font-size: 0.9rem;
-  color: var(--accent);
+  color: var(--danger-text);
 }
 
 /* Install popup */
@@ -191,9 +210,8 @@ button.link {
 }
 
 .sheet-icon {
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
+  width: 72px;
+  height: 72px;
   align-self: center;
 }
 
@@ -210,7 +228,7 @@ button.link {
   width: 1.2em;
   height: 1.2em;
   vertical-align: -0.2em;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Header + tabs */
@@ -350,7 +368,7 @@ button.link {
 }
 
 .error-banner {
-  color: var(--danger);
+  color: var(--danger-text);
 }
 
 /* Add bar + undo toast, fixed to the bottom */

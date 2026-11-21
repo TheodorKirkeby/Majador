@@ -26,3 +26,6 @@ dist-ssr
 # Secrets live in .env.local (covered by *.local above)
 .env.*.local
 supabase/.temp
+
+# The original cut-out photo; only the generated icons in public/ are published
+design/source/
