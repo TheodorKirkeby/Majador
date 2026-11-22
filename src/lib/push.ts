@@ -66,9 +66,18 @@ export async function enablePush(userId: string): Promise<void> {
  * one silent notification. Best effort: a failure here must never get in the
  * way of the list itself.
  */
-export async function notifyItemsAdded(ids: string[]): Promise<void> {
+export function notifyItemsAdded(ids: string[]): Promise<void> {
+  return notifyAdded('shopping.added', ids)
+}
+
+/** The same for films and series added to the film list. */
+export function notifyMoviesAdded(ids: string[]): Promise<void> {
+  return notifyAdded('movie.added', ids)
+}
+
+async function notifyAdded(type: 'shopping.added' | 'movie.added', ids: string[]): Promise<void> {
   try {
-    await supabase.functions.invoke('majador-push', { body: { type: 'shopping.added', ids } })
+    await supabase.functions.invoke('majador-push', { body: { type, ids } })
   } catch {
     // No connection or the function is down: the item is saved, the
     // notification is simply skipped.

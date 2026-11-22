@@ -31,17 +31,45 @@ export function shorten(text: string, max = ITEM_MAX): string {
  */
 export function addedText(name: string, items: string[]): { title: string; body: string } {
   const count = items.length
-  const shown: string[] = []
-  let length = 0
-  for (const item of items) {
-    const short = shorten(item)
-    if (shown.length > 0 && length + short.length + 2 > LINE_MAX) break
-    shown.push(short)
-    length += short.length + 2
-  }
-  const rest = count - shown.length
   return {
     title: `${name} tilføjede ${count} ${count === 1 ? 'vare' : 'varer'}`,
-    body: shown.join(', ') + (rest > 0 ? ` + ${rest} mere` : ''),
+    body: oneLine(items.map((item) => shorten(item))),
+  }
+}
+
+/** As many parts as fit on one line, the rest counted: "kaffe, smør + 2 mere". */
+function oneLine(parts: string[]): string {
+  const shown: string[] = []
+  let length = 0
+  for (const part of parts) {
+    if (shown.length > 0 && length + part.length + 2 > LINE_MAX) break
+    shown.push(part)
+    length += part.length + 2
+  }
+  const rest = parts.length - shown.length
+  return shown.join(', ') + (rest > 0 ? ` + ${rest} mere` : '')
+}
+
+export type AddedMovie = { title: string; kind: 'movie' | 'series'; rating?: number | null }
+
+/**
+ * "Maja tilføjede 2 film" / "Dune (8,5), Druk (9)".
+ * Same shape as addedText: the title counts, the body is one short line with
+ * each title and the rating the person gave it.
+ */
+export function movieAddedText(name: string, movies: AddedMovie[]): { title: string; body: string } {
+  const count = movies.length
+  const series = movies.filter((m) => m.kind === 'series').length
+  const noun =
+    series === 0 ? 'film' : series < count ? 'titler' : count === 1 ? 'serie' : 'serier'
+  return {
+    title: `${name} tilføjede ${count} ${noun}`,
+    body: oneLine(
+      movies.map((m) =>
+        m.rating == null
+          ? shorten(m.title)
+          : `${shorten(m.title)} (${String(m.rating).replace('.', ',')})`,
+      ),
+    ),
   }
 }

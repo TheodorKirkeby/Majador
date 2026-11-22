@@ -14,10 +14,11 @@
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import webpush from 'npm:web-push@3'
-import { addedText } from './text.ts'
+import { addedText, movieAddedText } from './text.ts'
 
-// "Vare tilføjet": items the same person added within this window are counted
-// into one notification, which replaces the previous one on the phone.
+// "Vare tilføjet" / "film tilføjet": what the same person added within this
+// window is counted into one notification, which replaces the previous one on
+// the phone.
 const ADDED_WINDOW_MS = 10 * 60 * 1000
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -119,6 +120,57 @@ Deno.serve(async (req) => {
       // Low urgency: a sleeping phone is not woken for this. Topic: if the
       // phone is offline, only the latest (which counts them all) is kept.
       options: { TTL: 24 * 60 * 60, urgency: 'low', topic: 'indkob-tilfojet' },
+    }
+  } else if (body.type === 'movie.added') {
+    // Same idea as shopping.added: the films the app just sent plus everything
+    // the caller added in the last few minutes, counted into one notification.
+    const ids: string[] = Array.isArray(body.ids)
+      ? body.ids.filter((id: unknown) => typeof id === 'string' && UUID.test(id)).slice(0, 50)
+      : []
+    const mine = () =>
+      db
+        .from('movies')
+        .select('id, title, kind, added_at, movie_ratings(user_id, rating)')
+        .eq('added_by', user.id)
+        .limit(50)
+    const since = new Date(Date.now() - ADDED_WINDOW_MS).toISOString()
+    const [recent, named] = await Promise.all([
+      mine().gte('added_at', since),
+      ids.length ? mine().in('id', ids) : Promise.resolve({ data: [], error: null }),
+    ])
+    if (recent.error || named.error) {
+      return json({ error: (recent.error ?? named.error)!.message }, 500)
+    }
+    type Row = {
+      id: string
+      title: string
+      kind: 'movie' | 'series'
+      added_at: string
+      movie_ratings: { user_id: string; rating: number }[]
+    }
+    const movies = new Map<string, Row>()
+    for (const row of [...(recent.data ?? []), ...(named.data ?? [])] as Row[]) {
+      movies.set(row.id, row)
+    }
+    // Deleted again before we got here: nothing to tell.
+    if (movies.size === 0) return json({ sent: 0, failed: 0, removed: 0 })
+    const newestFirst = [...movies.values()].sort((a, b) => b.added_at.localeCompare(a.added_at))
+
+    message = {
+      payload: {
+        ...movieAddedText(
+          member.display_name,
+          newestFirst.map((m) => ({
+            title: m.title,
+            kind: m.kind,
+            rating: m.movie_ratings.find((r) => r.user_id === user.id)?.rating ?? null,
+          })),
+        ),
+        tag: 'film-tilfojet',
+        silent: true,
+      },
+      targets: 'push_targets_others',
+      options: { TTL: 24 * 60 * 60, urgency: 'low', topic: 'film-tilfojet' },
     }
   } else {
     return json({ error: 'Unknown type' }, 400)

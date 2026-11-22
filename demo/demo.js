@@ -4,7 +4,7 @@
 // notification on this computer.
 
 import '@fontsource-variable/work-sans'
-import { addedText } from '../supabase/functions/majador-push/text.ts'
+import { addedText, movieAddedText } from '../supabase/functions/majador-push/text.ts'
 
 const ICON = new URL('/icon-192.png', location.origin).href
 const BADGE = new URL('/badge-96.png', location.origin).href
@@ -140,6 +140,35 @@ const KINDS = [
       {
         label: 'Listen som titel',
         make: ({ who, items }) => ({ title: 'Ønskeliste', body: `${who}: ${join(items)}` }),
+      },
+    ],
+  },
+  {
+    id: 'movie.added',
+    group: 'Film',
+    name: 'Film eller serie tilføjet',
+    status: 'live',
+    who: 'Maja',
+    detailLabel: 'Titel',
+    detail: 'Dune: Part Two',
+    burst: ['Dune: Part Two', 'Severance', 'Druk'],
+    tag: 'film-tilfojet',
+    actions: [{ action: 'open', title: 'Se listen' }],
+    defaults: { ...QUIET, appBadge: false },
+    variants: [
+      {
+        // The wording the server really sends (same function as the Edge
+        // Function). The rating is the one the person gave when adding it.
+        label: 'Som i appen: antal i titlen',
+        make: ({ who, items }) =>
+          movieAddedText(
+            who,
+            [...items].reverse().map((title) => ({ title, kind: 'movie', rating: 8.5 })),
+          ),
+      },
+      {
+        label: 'Listen som titel',
+        make: ({ who, items }) => ({ title: 'Film', body: `${who}: ${join(items)}` }),
       },
     ],
   },

@@ -1,7 +1,7 @@
 # MajaDor
 
-Private household app for Theodor and Maja (shopping list first; calendar,
-wishlist and movie ratings later). React + TypeScript + Vite, installed on the
+Private household app for Theodor and Maja (shopping list and film list with
+ratings so far; calendar and wishlist later). React + TypeScript + Vite, installed on the
 phones as a PWA (no app stores), data in Supabase, hosted on GitHub Pages at
 https://theodorkirkeby.github.io/Majador/ (Actions workflow deploys `main`; the
 build uses base path `/Majador/`, so never hard-code root-absolute URLs).
@@ -63,6 +63,10 @@ private key) live in `.env.local`, which is gitignored.
 Function names and secrets are project-wide, so they are prefixed:
 `majador-*` functions, `MAJADOR_*` secrets. Deploy with
 `supabase functions deploy majador-push --project-ref upiaqzyucpcfaqsyagsq --use-api --no-verify-jwt`.
+
+`majador-tmdb` looks film titles up in The Movie Database for the film list
+(summary, poster, year). Its key is the secret `MAJADOR_TMDB_KEY`; it is
+deployed the same way as `majador-push`.
 
 ## PWA notes
 
