@@ -593,6 +593,17 @@ button.link {
   color: var(--ink);
 }
 
+.field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.field-head button.link.more {
+  padding: 0;
+}
+
 button.link.more {
   align-self: flex-start;
   padding: 4px 0;
@@ -645,6 +656,24 @@ button.link.more {
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+/* The drawer scrolls when it is taller than the screen (keyboard open), so
+   its parts must keep their height instead of being squeezed to fit. */
+.drawer > * {
+  flex-shrink: 0;
+}
+
+/* While a drawer or the search screen is open, the page behind stays put. */
+html:has(.sheet-backdrop),
+html:has(.search) {
+  overflow: hidden;
+}
+
+.sheet-backdrop,
+.drawer,
+.search {
+  overscroll-behavior: contain;
 }
 
 .drawer h2 {

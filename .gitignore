@@ -29,3 +29,7 @@ supabase/.temp
 
 # The original cut-out photo; only the generated icons in public/ are published
 design/source/
+
+# Playwright output
+test-results
+playwright-report

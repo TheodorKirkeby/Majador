@@ -14,6 +14,16 @@ the catalogue of notification types and every option a push can vary on. It
 is not part of the production build. When a notification type is added or
 its wording changes, update `KINDS` in `demo/demo.js` too.
 
+## Tests
+
+`npm test` runs the end-to-end tests (Playwright, `tests/`): the real app in a
+phone-sized Chromium with Supabase replaced by an in-memory fake
+(`tests/fake-backend.ts`), so they need no network and never touch the real
+database. The deploy workflow runs them first; a failing test stops the
+deploy. When a feature or fix changes what the user sees or what is saved,
+add or update a test for it, and when the app starts calling a new table or
+Edge Function, teach the fake backend to answer it.
+
 ## Shared Supabase database
 
 This app shares ONE Supabase project (`upiaqzyucpcfaqsyagsq`) with other

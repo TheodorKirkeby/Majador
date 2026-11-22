@@ -10,6 +10,7 @@
 // "API Key".
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { rank, type TmdbResult } from './rank.ts'
 
 const MAX_RESULTS = 6
 
@@ -24,17 +25,6 @@ function json(body: unknown, status = 200) {
     status,
     headers: { ...cors, 'Content-Type': 'application/json' },
   })
-}
-
-type TmdbResult = {
-  id: number
-  media_type: string
-  title?: string
-  name?: string
-  overview?: string
-  poster_path?: string | null
-  release_date?: string
-  first_air_date?: string
 }
 
 Deno.serve(async (req) => {
@@ -84,22 +74,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Danish first; many titles have no Danish summary, so the English one is
-    // fetched alongside as a fallback.
+    // The same search in Danish and English (20 matches each); rank() merges
+    // them and picks the few to suggest.
     const [danish, english] = await Promise.all([search('da-DK'), search('en-US')])
-    const fallback = new Map(english.map((r) => [`${r.media_type}:${r.id}`, r.overview]))
-    const results = danish
-      .filter((r) => r.media_type === 'movie' || r.media_type === 'tv')
-      .slice(0, MAX_RESULTS)
-      .map((r) => ({
-        tmdb_id: r.id,
-        kind: r.media_type === 'tv' ? 'series' : 'movie',
-        title: r.title ?? r.name ?? '',
-        year: Number((r.release_date ?? r.first_air_date ?? '').slice(0, 4)) || null,
-        summary: r.overview || fallback.get(`${r.media_type}:${r.id}`) || null,
-        poster_path: r.poster_path ?? null,
-      }))
-    return json({ results })
+    return json({ results: rank(query, danish, english, MAX_RESULTS) })
   } catch (e) {
     return json({ error: e instanceof Error ? e.message : String(e) }, 502)
   }

@@ -199,21 +199,25 @@ function MovieSheet({ movie, userId, others, addedBy, onClose }: SheetProps) {
   // The title being looked up in TMDB; null = not looking (nothing typed yet,
   // or a suggestion was just picked).
   const [lookup, setLookup] = useState<string | null>(null)
-  const [found, setFound] = useState<{ query: string; matches: Match[] } | null>(null)
+  // The answer to a lookup; matches: null = the lookup failed.
+  const [found, setFound] = useState<{ query: string; matches: Match[] | null } | null>(null)
   const lookupQuery = lookup?.trim() ?? ''
-  const suggestions = lookupQuery.length >= 2 && found?.query === lookupQuery ? found.matches : null
+  const looking = lookupQuery.length >= 2
+  const answered = looking && found?.query === lookupQuery
+  const suggestions = answered ? found.matches : null
 
   useEffect(() => {
     if (lookupQuery.length < 2) return
     let stale = false
     // Wait for a pause in the typing before asking.
     const timer = window.setTimeout(async () => {
+      let matches: Match[] | null = null
       try {
-        const matches = await searchTmdb(lookupQuery)
-        if (!stale) setFound({ query: lookupQuery, matches })
+        matches = await searchTmdb(lookupQuery)
       } catch {
         // Offline or the lookup is down: the film can still be added by hand.
       }
+      if (!stale) setFound({ query: lookupQuery, matches })
     }, 350)
     return () => {
       stale = true
@@ -301,10 +305,18 @@ function MovieSheet({ movie, userId, others, addedBy, onClose }: SheetProps) {
             ))}
           </ul>
         )}
+        {looking && !answered && (
+          <p className="hint" role="status">
+            Søger efter forslag…
+          </p>
+        )}
         {suggestions?.length === 0 && (
           <p className="hint">Ingen forslag fra TMDB. Du kan stadig tilføje titlen.</p>
         )}
-        {!suggestions && info.tmdb_id !== null && (
+        {answered && suggestions === null && (
+          <p className="hint">Kunne ikke hente forslag. Du kan stadig tilføje titlen.</p>
+        )}
+        {!looking && info.tmdb_id !== null && (
           <div className="match">
             {info.poster_path && <img className="poster" src={posterUrl(info.poster_path)} alt="" />}
             <div>
@@ -322,9 +334,17 @@ function MovieSheet({ movie, userId, others, addedBy, onClose }: SheetProps) {
         )}
 
         <div className="field">
-          <span>
-            Din bedømmelse{rating !== null && <b className="rating-value"> {formatRating(rating)}</b>}
-          </span>
+          <div className="field-head">
+            <span>
+              Din bedømmelse
+              {rating !== null && <b className="rating-value"> {formatRating(rating)}</b>}
+            </span>
+            {!decimals && (
+              <button type="button" className="link more" onClick={() => setDecimals(true)}>
+                Tilføj decimal
+              </button>
+            )}
+          </div>
           <div className="rating-row" role="group" aria-label="Din bedømmelse fra 1 til 10">
             {WHOLE.map((n) => (
               <button
@@ -340,7 +360,7 @@ function MovieSheet({ movie, userId, others, addedBy, onClose }: SheetProps) {
               </button>
             ))}
           </div>
-          {decimals ? (
+          {decimals && (
             <div className="rating-row decimals" role="group" aria-label="Decimal">
               {TENTHS.map((t) => (
                 <button
@@ -354,10 +374,6 @@ function MovieSheet({ movie, userId, others, addedBy, onClose }: SheetProps) {
                 </button>
               ))}
             </div>
-          ) : (
-            <button type="button" className="link more" onClick={() => setDecimals(true)}>
-              Tilføj decimal
-            </button>
           )}
         </div>
         {error && <p className="error">{error}</p>}
