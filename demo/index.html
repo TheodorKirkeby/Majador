@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="da">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>MajaDor · Notifikationer</title>
+    <link rel="stylesheet" href="./demo.css" />
+  </head>
+  <body>
+    <!--
+      Dev-only playground for push notifications. Served by `npm run dev` at
+      /demo/ and never part of the production build (Vite only builds the root
+      index.html).
+    -->
+    <div class="page">
+      <header class="top">
+        <img src="/icon-192.png" alt="" />
+        <div>
+          <h1>Notifikationer</h1>
+          <p>
+            Prøv hver type notifikation, og skru på alt det, vi kan bestemme: tekst, lyd, samling og
+            udseende. Telefonen til højre er en skitse; knappen “Rigtige notifikationer” sender dem
+            også til denne computer.
+          </p>
+        </div>
+      </header>
+
+      <div class="layout">
+        <main>
+          <section class="panel">
+            <h2>Typer af notifikationer</h2>
+            <p class="lead">
+              Hver type har sine egne indstillinger. Tryk <strong>Prøv</strong> for at sende et
+              eksempel.
+            </p>
+            <div id="kinds"></div>
+          </section>
+
+          <section class="panel" id="controls"></section>
+
+          <section class="panel">
+            <h2>Regler, der ligger på serveren</h2>
+            <ul class="facts">
+              <li>
+                <strong>Aldrig til én selv.</strong> Den, der tilføjer varen, får ingen notifikation.
+                Kun den andens enheder.
+              </li>
+              <li>
+                <strong>Til og fra pr. type og person.</strong> Fx kan Maja slå “Vare købt” fra og
+                beholde “Vare tilføjet”.
+              </li>
+              <li>
+                <strong>Stilletid.</strong> Fx ingen notifikationer mellem 22 og 7; de bliver enten
+                droppet eller samlet til om morgenen.
+              </li>
+              <li>
+                <strong>Vent og saml.</strong> Kræver et planlagt job i den delte database
+                (<code>pg_cron</code>), så det er den eneste mulighed her, der rører noget uden for
+                <code>majador</code>-skemaet.
+              </li>
+            </ul>
+
+            <h2>Det bestemmer telefonen selv</h2>
+            <ul class="facts">
+              <li>
+                <strong>iPhone:</strong> Indstillinger → Notifikationer → MajaDor. Her kan lyd,
+                bannere og låseskærm slås fra hver for sig, så de kun ligger i Notifikationscenter.
+              </li>
+              <li>
+                <strong>Android:</strong> hold fingeren på en MajaDor-notifikation og vælg “Lydløs”.
+                Så gælder det alle fra appen.
+              </li>
+              <li>
+                <strong>Hver push skal vise noget.</strong> Både iPhone og Android kræver, at en push
+                ender som en synlig notifikation. Vi kan altså ikke sende en helt usynlig besked,
+                der kun opdaterer tallet på ikonet.
+              </li>
+              <li>
+                <strong>iPhone viser mindst.</strong> Eget ikon, billede og knapper bliver ignoreret
+                der. Titel, tekst, samling og tal på ikonet virker.
+              </li>
+            </ul>
+          </section>
+
+          <section class="panel">
+            <h2>Det bliver sendt</h2>
+            <p class="lead">Sådan ser den valgte type ud i koden med de nuværende indstillinger.</p>
+            <div id="code"></div>
+          </section>
+        </main>
+
+        <aside>
+          <div class="preview">
+            <div class="seg" id="platform" role="group" aria-label="Telefon"></div>
+            <div id="phone"></div>
+            <div class="alert-pill" id="alert" role="status"></div>
+            <dl class="stats" id="stats"></dl>
+            <div class="preview-actions" id="actions"></div>
+            <label class="switch real">
+              <input type="checkbox" id="real" />
+              <span>
+                <strong>Rigtige notifikationer</strong>
+                <small id="real-hint">Send dem også til denne computer.</small>
+              </span>
+            </label>
+          </div>
+        </aside>
+      </div>
+    </div>
+    <script type="module" src="./demo.js"></script>
+  </body>
+</html>

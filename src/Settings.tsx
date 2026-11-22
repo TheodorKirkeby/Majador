@@ -38,22 +38,22 @@ export default function Settings({ session, onLogout }: Props) {
   return (
     <>
       <section className="card">
-        <h2>This device</h2>
+        <h2>Denne enhed</h2>
         <ul className="checks">
-          <Check ok={isInstalled} label="Opened from the home screen" />
-          <Check ok label={`Logged in as ${session.user.email}`} />
+          <Check ok={isInstalled} label="Åbnet fra hjemmeskærmen" />
+          <Check ok label={`Logget ind som ${session.user.email}`} />
           <Check
             ok={Boolean(memberName)}
-            label={memberName ? `Household member: ${memberName}` : 'Not in the household yet'}
+            label={memberName ? `Medlem af husstanden: ${memberName}` : 'Ikke med i husstanden endnu'}
           />
           <Check
             ok={subscribed}
             label={
               !pushSupported
-                ? 'Notifications are not available here'
+                ? 'Notifikationer er ikke tilgængelige her'
                 : subscribed
-                  ? 'Notifications are on for this device'
-                  : 'Notifications are off for this device'
+                  ? 'Notifikationer er slået til på denne enhed'
+                  : 'Notifikationer er slået fra på denne enhed'
             }
           />
         </ul>
@@ -65,11 +65,11 @@ export default function Settings({ session, onLogout }: Props) {
               run(async () => {
                 await enablePush(session.user.id)
                 setSubscribed(true)
-                return 'Notifications are on.'
+                return 'Notifikationer er slået til.'
               })
             }
           >
-            Turn on notifications
+            Slå notifikationer til
           </button>
         )}
 
@@ -79,13 +79,13 @@ export default function Settings({ session, onLogout }: Props) {
             onClick={() =>
               run(async () => {
                 const r = await sendTestPush()
-                return `Sent to ${r.sent} device${r.sent === 1 ? '' : 's'}${
-                  r.failed ? `, ${r.failed} failed` : ''
+                return `Sendt til ${r.sent} ${r.sent === 1 ? 'enhed' : 'enheder'}${
+                  r.failed ? `, ${r.failed} fejlede` : ''
                 }.`
               })
             }
           >
-            Send test notification to everyone
+            Send testnotifikation til alle
           </button>
         )}
 
@@ -93,7 +93,7 @@ export default function Settings({ session, onLogout }: Props) {
       </section>
 
       <button className="link" onClick={onLogout}>
-        Log out
+        Log ud
       </button>
     </>
   )

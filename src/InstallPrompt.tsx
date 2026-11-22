@@ -33,39 +33,39 @@ export default function InstallPrompt() {
     <div className="sheet-backdrop" role="dialog" aria-modal="true" aria-labelledby="install-title">
       <div className="sheet">
         <img className="sheet-icon" src={`${import.meta.env.BASE_URL}icon-192.png`} alt="" />
-        <h2 id="install-title">Install MajaDor</h2>
+        <h2 id="install-title">Installér MajaDor</h2>
 
         {installed ? (
-          <p>Installed. Close this tab and open MajaDor from your home screen.</p>
+          <p>Installeret. Luk denne fane, og åbn MajaDor fra din hjemmeskærm.</p>
         ) : canPrompt ? (
           <>
-            <p>Put MajaDor on your home screen to get notifications and a full-screen app.</p>
-            <button onClick={async () => setInstalled(await promptInstall())}>Install</button>
+            <p>Læg MajaDor på din hjemmeskærm for at få notifikationer og en app i fuld skærm.</p>
+            <button onClick={async () => setInstalled(await promptInstall())}>Installér</button>
           </>
         ) : isIos ? (
           <>
-            <p>iPhone only installs apps from the Share menu. In Safari:</p>
+            <p>iPhone installerer kun apps fra Del-menuen. I Safari:</p>
             <ol className="steps">
               <li>
-                Tap <ShareIcon /> <strong>Share</strong> in the toolbar
+                Tryk på <ShareIcon /> <strong>Del</strong> i værktøjslinjen
               </li>
               <li>
-                Scroll down and tap <strong>Add to Home Screen</strong>
+                Rul ned, og tryk på <strong>Føj til hjemmeskærm</strong>
               </li>
               <li>
-                Tap <strong>Add</strong>, then open MajaDor from the icon
+                Tryk på <strong>Tilføj</strong>, og åbn så MajaDor fra ikonet
               </li>
             </ol>
           </>
         ) : (
           <p>
-            Open your browser's menu and choose <strong>Install app</strong> or{' '}
-            <strong>Add to Home screen</strong>, then open MajaDor from the icon.
+            Åbn browserens menu, og vælg <strong>Installér app</strong> eller{' '}
+            <strong>Føj til startskærm</strong>. Åbn derefter MajaDor fra ikonet.
           </p>
         )}
 
         <button className="link" onClick={dismiss}>
-          {installed ? 'Close' : 'Not now'}
+          {installed ? 'Luk' : 'Ikke nu'}
         </button>
       </div>
     </div>

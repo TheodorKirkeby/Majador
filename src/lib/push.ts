@@ -32,11 +32,11 @@ export async function currentSubscription(): Promise<PushSubscription | null> {
  * user gesture, and only when the app runs from the home screen.
  */
 export async function enablePush(userId: string): Promise<void> {
-  if (!pushSupported) throw new Error('This browser does not support push notifications.')
-  if (!vapidPublicKey) throw new Error('Missing VITE_VAPID_PUBLIC_KEY.')
+  if (!pushSupported) throw new Error('Denne browser understøtter ikke push-notifikationer.')
+  if (!vapidPublicKey) throw new Error('VITE_VAPID_PUBLIC_KEY mangler.')
 
   const permission = await Notification.requestPermission()
-  if (permission !== 'granted') throw new Error('Notifications were not allowed.')
+  if (permission !== 'granted') throw new Error('Notifikationer blev ikke tilladt.')
 
   const reg = await navigator.serviceWorker.ready
   const sub =
@@ -58,6 +58,21 @@ export async function enablePush(userId: string): Promise<void> {
     { onConflict: 'endpoint' },
   )
   if (error) throw new Error(error.message)
+}
+
+/**
+ * Tell the rest of the household that these items were added. The server
+ * counts them together with anything else added in the last few minutes into
+ * one silent notification. Best effort: a failure here must never get in the
+ * way of the list itself.
+ */
+export async function notifyItemsAdded(ids: string[]): Promise<void> {
+  try {
+    await supabase.functions.invoke('majador-push', { body: { type: 'shopping.added', ids } })
+  } catch {
+    // No connection or the function is down: the item is saved, the
+    // notification is simply skipped.
+  }
 }
 
 export type PushResult = { sent: number; failed: number; removed: number }

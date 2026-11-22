@@ -7,6 +7,7 @@
 // person's changes in while the app is open.
 
 import type { RealtimeChannel } from '@supabase/supabase-js'
+import { notifyItemsAdded } from './push'
 import { supabase } from './supabase'
 
 export type Item = {
@@ -19,7 +20,9 @@ export type Item = {
 }
 
 type Op =
-  | { kind: 'insert'; row: Item }
+  // notify: a newly added item (the other person gets a notification once it
+  // is saved), as opposed to a deleted item being put back by Undo.
+  | { kind: 'insert'; row: Item; notify?: boolean }
   | { kind: 'update'; id: string; patch: Partial<Item> }
   | { kind: 'delete'; id: string }
 
@@ -130,15 +133,25 @@ async function send(op: Op): Promise<OpResult> {
 }
 
 async function flush(): Promise<boolean> {
+  // New items saved in this round. They are announced together afterwards, so
+  // a whole list typed without signal becomes one notification, not ten.
+  const added: string[] = []
+  let done = true
   while (queue.length > 0) {
-    const result = await send(queue[0])
-    if (result === 'retry') return false
+    const op = queue[0]
+    const result = await send(op)
+    if (result === 'retry') {
+      done = false
+      break
+    }
+    if (result === 'ok' && op.kind === 'insert' && op.notify) added.push(op.row.id)
     // 'rejected' ops are dropped: retrying a change the database refuses
     // would block every change queued behind it.
     queue = queue.slice(1)
     save(QUEUE_KEY, queue)
   }
-  return true
+  if (added.length > 0) void notifyItemsAdded(added)
+  return done
 }
 
 async function fetchAll(): Promise<boolean> {
@@ -261,6 +274,7 @@ export function addItem(text: string) {
   if (!trimmed || !userId) return
   enqueue({
     kind: 'insert',
+    notify: true,
     row: {
       id: crypto.randomUUID(),
       text: trimmed,

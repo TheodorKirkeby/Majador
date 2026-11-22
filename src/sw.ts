@@ -10,7 +10,7 @@ clientsClaim()
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
 
-type PushPayload = { title?: string; body?: string; url?: string; tag?: string }
+type PushPayload = { title?: string; body?: string; url?: string; tag?: string; silent?: boolean }
 
 self.addEventListener('push', (event) => {
   let data: PushPayload = {}
@@ -27,7 +27,10 @@ self.addEventListener('push', (event) => {
       icon: new URL('icon-192.png', self.registration.scope).href,
       // Android's small status-bar icon: must be a white shape on transparent.
       badge: new URL('badge-96.png', self.registration.scope).href,
+      // Same tag = replaces the previous notification instead of piling up.
       tag: data.tag,
+      // No sound or vibration (e.g. "vare tilføjet", which can come often).
+      silent: data.silent ?? false,
       data: { url: data.url ?? self.registration.scope },
     }),
   )

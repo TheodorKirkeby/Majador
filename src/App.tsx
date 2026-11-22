@@ -64,7 +64,7 @@ function Home({ session }: { session: Session }) {
         <Brand />
         <button
           className="icon-button"
-          aria-label={view === 'settings' ? 'Back to the list' : 'Settings'}
+          aria-label={view === 'settings' ? 'Tilbage til listen' : 'Indstillinger'}
           onClick={() => setView(view === 'settings' ? 'list' : 'settings')}
         >
           {view === 'settings' ? <CloseIcon /> : <GearIcon />}
@@ -81,15 +81,15 @@ function Home({ session }: { session: Session }) {
         />
       ) : (
         <>
-          <nav className="tabs" aria-label="Shopping list">
+          <nav className="tabs" aria-label="Indkøbsliste">
             <button aria-pressed={view === 'list'} onClick={() => setView('list')}>
-              To buy{toBuy > 0 ? ` (${toBuy})` : ''}
+              Skal købes{toBuy > 0 ? ` (${toBuy})` : ''}
             </button>
             <button aria-pressed={view === 'bought'} onClick={() => setView('bought')}>
-              Bought
+              Købt
             </button>
           </nav>
-          {error && <p className="banner error-banner">Could not sync: {error}</p>}
+          {error && <p className="banner error-banner">Kunne ikke synkronisere: {error}</p>}
           <ShoppingList view={view} />
         </>
       )}
@@ -108,7 +108,15 @@ function Login() {
     setBusy(true)
     setError(null)
     const { error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) setError(error.message)
+    if (error) {
+      // Supabase answers in English; the one message people actually hit gets
+      // a Danish version.
+      setError(
+        error.code === 'invalid_credentials'
+          ? 'Forkert email eller adgangskode.'
+          : `Kunne ikke logge ind: ${error.message}`,
+      )
+    }
     setBusy(false)
   }
 
@@ -125,7 +133,7 @@ function Login() {
         />
       </label>
       <label>
-        Password
+        Adgangskode
         <input
           type="password"
           autoComplete="current-password"
@@ -136,7 +144,7 @@ function Login() {
       </label>
       {error && <p className="error">{error}</p>}
       <button type="submit" disabled={busy}>
-        {busy ? 'Logging in…' : 'Log in'}
+        {busy ? 'Logger ind…' : 'Log ind'}
       </button>
     </form>
   )

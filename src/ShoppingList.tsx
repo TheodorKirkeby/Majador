@@ -16,19 +16,19 @@ function startOfDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
 }
 
-/** "today", "yesterday", "5 days", "3 weeks", then the date. */
+/** "i dag", "i går", "5 dage", "3 uger", then the date. */
 function age(iso: string, now: Date): string {
   const days = Math.round((startOfDay(now) - startOfDay(new Date(iso))) / DAY)
-  if (days <= 0) return 'today'
-  if (days === 1) return 'yesterday'
-  if (days < 14) return `${days} days`
-  if (days < 60) return `${Math.floor(days / 7)} weeks`
+  if (days <= 0) return 'i dag'
+  if (days === 1) return 'i går'
+  if (days < 14) return `${days} dage`
+  if (days < 60) return `${Math.floor(days / 7)} uger`
   return shortDate(iso, now)
 }
 
 function shortDate(iso: string, now: Date): string {
   const d = new Date(iso)
-  return d.toLocaleDateString('en-GB', {
+  return d.toLocaleDateString('da-DK', {
     day: 'numeric',
     month: 'short',
     year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric',
@@ -42,7 +42,7 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
   const [text, setText] = useState('')
   const [undo, setUndo] = useState<Undo | null>(null)
   const undoTimer = useRef<number | undefined>(undefined)
-  // "today"/"3 days" labels are relative to this; refreshed whenever the app
+  // "i dag"/"3 dage" labels are relative to this; refreshed whenever the app
   // comes back to the foreground so they are right after midnight.
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
@@ -90,17 +90,17 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
 
   function markBought(item: Item) {
     setBought(item.id, true)
-    offerUndo({ message: `Bought: ${item.text}`, run: () => setBought(item.id, false) })
+    offerUndo({ message: `Købt: ${item.text}`, run: () => setBought(item.id, false) })
   }
 
   function moveBack(item: Item) {
     setBought(item.id, false)
-    offerUndo({ message: `Back on the list: ${item.text}`, run: () => setBought(item.id, true) })
+    offerUndo({ message: `Tilbage på listen: ${item.text}`, run: () => setBought(item.id, true) })
   }
 
   function remove(item: Item) {
     removeItem(item.id)
-    offerUndo({ message: `Deleted: ${item.text}`, run: () => restoreItem(item) })
+    offerUndo({ message: `Slettet: ${item.text}`, run: () => restoreItem(item) })
   }
 
   const who = (id: string | null) => (id && members[id]) || null
@@ -110,18 +110,18 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
     <>
       {status === 'offline' && (
         <p className="banner">
-          No connection.{' '}
+          Ingen forbindelse.{' '}
           {pending > 0
-            ? `${pending} change${pending === 1 ? '' : 's'} will be sent when you're back online.`
-            : 'Showing the last saved list.'}
+            ? `${pending} ${pending === 1 ? 'ændring' : 'ændringer'} sendes, når du er online igen.`
+            : 'Viser den senest gemte liste.'}
         </p>
       )}
 
       {shown.length === 0 ? (
         <p className="empty">
           {view === 'list'
-            ? 'Nothing on the list. Add the first item below.'
-            : 'Nothing bought yet. Swipe an item on the list to mark it as bought.'}
+            ? 'Listen er tom. Tilføj den første vare herunder.'
+            : 'Intet er købt endnu. Swipe en vare på listen for at markere den som købt.'}
         </p>
       ) : (
         <ul className="items">
@@ -129,8 +129,8 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
             view === 'list' ? (
               <SwipeRow
                 key={item.id}
-                right={{ label: 'Bought', tone: 'ok', onCommit: () => markBought(item) }}
-                left={{ label: 'Delete', tone: 'danger', onCommit: () => remove(item) }}
+                right={{ label: 'Købt', tone: 'ok', onCommit: () => markBought(item) }}
+                left={{ label: 'Slet', tone: 'danger', onCommit: () => remove(item) }}
               >
                 <span className="item-text">{item.text}</span>
                 <span className="item-meta">
@@ -141,8 +141,8 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
             ) : (
               <SwipeRow
                 key={item.id}
-                right={{ label: 'Back to list', tone: 'neutral', onCommit: () => moveBack(item) }}
-                left={{ label: 'Delete', tone: 'danger', onCommit: () => remove(item) }}
+                right={{ label: 'Tilbage på listen', tone: 'neutral', onCommit: () => moveBack(item) }}
+                left={{ label: 'Slet', tone: 'danger', onCommit: () => remove(item) }}
               >
                 <span className="item-text bought">{item.text}</span>
                 <span className="item-meta">
@@ -167,7 +167,7 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
                 setUndo(null)
               }}
             >
-              Undo
+              Fortryd
             </button>
           </div>
         )}
@@ -176,14 +176,14 @@ export default function ShoppingList({ view }: { view: 'list' | 'bought' }) {
             <input
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="Add an item"
-              aria-label="Add an item"
+              placeholder="Tilføj en vare"
+              aria-label="Tilføj en vare"
               maxLength={200}
               enterKeyHint="done"
               autoCapitalize="sentences"
               autoComplete="off"
             />
-            <button type="submit" disabled={!text.trim()} aria-label="Add">
+            <button type="submit" disabled={!text.trim()} aria-label="Tilføj">
               +
             </button>
           </form>

@@ -6,6 +6,14 @@ phones as a PWA (no app stores), data in Supabase, hosted on GitHub Pages at
 https://theodorkirkeby.github.io/Majador/ (Actions workflow deploys `main`; the
 build uses base path `/Majador/`, so never hard-code root-absolute URLs).
 
+All text the user sees is Danish (UI, error messages, notification texts).
+Code, comments and commit messages stay English.
+
+`demo/` is a dev-only notification playground (`npm run dev`, then `/demo/`):
+the catalogue of notification types and every option a push can vary on. It
+is not part of the production build. When a notification type is added or
+its wording changes, update `KINDS` in `demo/demo.js` too.
+
 ## Shared Supabase database
 
 This app shares ONE Supabase project (`upiaqzyucpcfaqsyagsq`) with other
